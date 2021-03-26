@@ -1,5 +1,6 @@
 using System.Threading.Tasks;
 using API.Models;
+using Microsoft.EntityFrameworkCore;
 
 namespace API.Data
 {
@@ -35,14 +36,49 @@ namespace API.Data
             }
         }
 
-        public Task<User> Login(string username, string password)
+        public async Task<User> Login(string username, string password)
         {
-            throw new System.NotImplementedException();
+            var user = await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
+
+            if (user == null)
+            {
+                return null;
+            }
+
+            if (VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
+            {
+                return null;
+            }
+
+            return user;
         }
 
-        public Task<bool> UserExists(string username)
+        private bool VerifyPasswordHash(string password, byte[] passwordHash, byte[] passwordSalt)
         {
-            throw new System.NotImplementedException();
+            using (var hmac = new System.Security.Cryptography.HMACSHA512(passwordSalt))
+            {
+                var computeHash = hmac.ComputeHash(System.Text.Encoding.UTF8.GetBytes(password));
+
+                for (int i = 0; i < computeHash.Length; i++)
+                {
+                    if (computeHash[i] != passwordHash[i])
+                    {
+                        return false;
+                    }
+                }
+            }
+
+            return true;
+        }
+
+        public async Task<bool> UserExists(string username)
+        {
+            if (await _context.Users.AnyAsync(x => x.Username == username))
+            {
+                return true;
+            }
+
+            return false;
         }
     }
 }
