@@ -1,3 +1,4 @@
+using System;
 using System.Threading.Tasks;
 using API.Models;
 using Microsoft.EntityFrameworkCore;
@@ -39,13 +40,15 @@ namespace API.Data
         public async Task<User> Login(string username, string password)
         {
             var user = await _context.Users.FirstOrDefaultAsync(x => x.Username == username);
+            
 
             if (user == null)
             {
+                Console.WriteLine("NUll");
                 return null;
             }
 
-            if (VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
+            if (!VerifyPasswordHash(password, user.PasswordHash, user.PasswordSalt))
             {
                 return null;
             }
