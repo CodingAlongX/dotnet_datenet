@@ -1,3 +1,4 @@
+using System;
 using System.Linq;
 using System.Security.Claims;
 using System.Threading.Tasks;
@@ -36,7 +37,7 @@ namespace API.Controllers
             _cloudinary = new Cloudinary(acc);
         }
 
-        [HttpGet("{id}", Name = "GetPhoto")]
+        [HttpGet("{id}", Name = nameof(GetPhoto))]
         public async Task<IActionResult> GetPhoto(int id)
         {
             var photoFromRepo = await _repo.GetPhoto(id);
@@ -48,7 +49,8 @@ namespace API.Controllers
 
 
         [HttpPost]
-        public async Task<IActionResult> AddPhotosForUser(int userId, PhotoForCreationDto photoForCreationDto)
+        public async Task<IActionResult> AddPhotosForUser(int userId,
+            [FromForm] PhotoForCreationDto photoForCreationDto)
         {
             if (userId != int.Parse(User.FindFirst(ClaimTypes.NameIdentifier).Value))
             {
@@ -92,7 +94,10 @@ namespace API.Controllers
             {
                 var photoToReturn = _mapper.Map<PhotoForReturnDto>(photo);
 
-                return CreatedAtRoute("GetPhoto", new {id = photo.Id}, photoToReturn);
+                Console.WriteLine(photoToReturn.Url);
+                Console.WriteLine(photo.Id);
+
+                return CreatedAtRoute(nameof(GetPhoto), new {userId, id = photo.Id}, photoToReturn);
             }
 
             return BadRequest("Could not add the photo");
