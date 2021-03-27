@@ -96,7 +96,6 @@ namespace API
 
             app.UseCors(x => x.AllowAnyHeader()
                 .AllowAnyMethod()
-                // .AllowCredentials()
                 .AllowAnyOrigin());
 
             app.UseAuthentication();
